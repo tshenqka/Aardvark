@@ -71,6 +71,7 @@
 
 Servo servo;             //create servo object
 byte servoOffset = 0;    //change the value to Calibrate servo
+u8 distance[4];          //define an arry with type u8(same to unsigned char)
 
 IRrecv irrecv(PIN_IRREMOTE_RECV);
 decode_results results;
@@ -209,12 +210,37 @@ void loop() {
     default:
       break;
   }*/
+ 
+  servo.write(45);
+  delay(1000);
+  distance[0] = getSonar();   //get ultrsonice value and save it into distance[0]
+
+  servo.write(90);
+  delay(1000);
+  distance[1] = getSonar();
+
+  servo.write(135);
+  delay(1000);
+  distance[2] = getSonar();
+
+  servo.write(90);
+  delay(1000);
+  distance[3] = getSonar();
+  
+  Serial.print("Distance L / M / R / M2:   ");  //Left/Middle/Right/Middle2
+  for (int i = 0; i < 4; i++) {
+    Serial.print(distance[i]);     //print ultrasonic in 45°, 90°, 135°, 90°
+    Serial.print("/");
+  }
+  Serial.print('\n');  //next content will be printed in new line
+  /*
   // Below code is written by us
   motorRun(100,100); // move forward
   float dist = getSonar();
   if (dist < 10) { // if an object is detected in front,
     motorRun(100,-130);
     delay(1500); // turn 90 degrees to the right
+  */
   }
 }
 
