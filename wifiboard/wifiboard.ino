@@ -10,14 +10,14 @@ const char server[] = "encyz7exee95.x.pipedream.net";
 
 WiFiClient client;
 
-#define VERBOSE_WIFI false
-void wifiprint(char *msg) {
+#define VERBOSE_WIFI true
+void wifiprint(String msg) {
   if (VERBOSE_WIFI) {
     Serial.print(msg);
   }
 }
 
-void wifiprintln(char *msg) {
+void wifiprintln(String msg) {
   if (VERBOSE_WIFI) {
     Serial.print(msg);
     Serial.println();
@@ -67,9 +67,9 @@ void connect() {
   wifiprint("MAC address: ");
   printMacAddress(mac);
   wifiprint("Local IP Address: ");
-  wifiprintln(WiFi.localIP());
+  wifiprintln(String(WiFi.localIP()));
   wifiprint("Signal strength (RSSI): ");
-  wifiprintln(WiFi.RSSI());
+  wifiprintln(String(WiFi.RSSI()));
 }
 
 void internetCheck() {
@@ -117,14 +117,14 @@ void loop() {
 }
 
 void printMacAddress(byte mac[]) {
-  for (int i = 5; i >= 0; i--) {
-    if (mac[i] < 16) {
-      wifiprint("0");
-    }
-    wifiprint(mac[i], HEX);
-    if (i > 0) {
-      wifiprint(":");
-    }
-  }
-  wifiprintln();
+//  for (int i = 5; i >= 0; i--) {
+//    if (mac[i] < 16) {
+//      wifiprint("0");
+//    }
+//    wifiprint(mac[i], HEX);
+//    if (i > 0) {
+//      wifiprint(":");
+//    }
+//  }
+//  wifiprintln();
 }
