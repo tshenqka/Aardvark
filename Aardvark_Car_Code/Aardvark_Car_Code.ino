@@ -10,7 +10,7 @@
 ////Definitions related to IR-remote    --- included with pre-made code
 #define IR_UPDATE_TIMEOUT     110
 #define IR_CAR_SPEED          250
-#include <IRremote.h>
+#include "IRremote.h"
 
 #define PIN_SERVO     2
 #define PIN_DIRECTION_LEFT  4
@@ -89,6 +89,19 @@ u8 currentLedIndex = 0;
 u16 stripDisplayDelay = 100;
 u32 lastStripUpdateTime = 0;
 Freenove_WS2812B_Controller strip(STRIP_I2C_ADDRESS, STRIP_LEDS_COUNT, TYPE_GRB);
+
+// our code
+float dist;
+// delay time for servo
+int d = 100;
+// delay_time controls reverse time
+int delay_time = 1500;
+// x controls turn angle
+int x = 200;
+// c controls reverse amount
+int c = 15;
+// forward controls forward speed
+int forward = 200;
 
 float batteryVoltage = 0;
 bool isBuzzered = false;
@@ -209,13 +222,38 @@ void loop() {
     default:
       break;
   }*/
+  motorRun(forward,forward);
+  for(int i = 15; i<= 165; i+=15) {
+    servo.write(i);
+    dist = getSonar();
+    if(dist < 10) {
+      motorRun(-x-c, x);
+      delay(delay_time);
+      motorRun(forward,forward);
+    }
+    delay(d);
+   }
+
+  for(int i = 165; i>=15; i-=15) {
+    servo.write(i);
+    dist = getSonar();
+    if(dist < 10) {
+      motorRun(x,-x-c);
+      delay(delay_time);
+      motorRun(forward,forward);
+    }
+    delay(d);
+  }
+ 
+  /*
   // Below code is written by us
   motorRun(100,100); // move forward
-  float dist = getSonar();
+  float dist = 10;
   if (dist < 10) { // if an object is detected in front,
     motorRun(100,-130);
     delay(1500); // turn 90 degrees to the right
   }
+  */
 }
 
 ////////// All code below is taken from the example code provided with the car kit
