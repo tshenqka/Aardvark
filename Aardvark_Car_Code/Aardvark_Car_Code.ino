@@ -105,13 +105,13 @@ int c = 15;
 // forward controls forward speed
 int forward = 200;
 
-bool clockwise = true;
-int min_angle = 20;
-int max_angle = 180 - min_angle;
-int angle = min_angle;
-
 float batteryVoltage = 0;
 bool isBuzzered = false;
+
+bool is_clockwise = true;
+int max_angle = 180;
+int current_angle = 0;
+int servo_delay = 15;
 
 void setup() {
   Serial.begin(9600);
@@ -127,7 +127,7 @@ void setup() {
 
 // Loop function is called continuously
 void loop() {
-  servo_rotate()
+  servo_rotate_step(max_angle, &is_clockwise, &current_angle, servo_delay);
 }
 
 void serialRead() {
@@ -156,16 +156,15 @@ void pinsSetup() {
   setBuzzer(false);
 }
 
-void servo_rotate() {
-  servo.write(angle)
-  angle += clockwise ? 1 : -1;
+void servo_rotate_step(int max_angle, bool *is_clockwise, int *current_angle, int servo_delay) {
+  (*current_angle)++;
+  servo.write(current_angle);
 
   if(angle == max_angle) {
-    clockwise = false;
-  } else if (angle == min_angle) {
-    clockwise = true;
-  }
-  delay(15);
+    is_clockwise = false;
+  } else if (angle == 180 - max_angle) {
+    is_clockwise = true;
+  delay(servo_delay);
 }
 
 void motorRun(int speedl, int speedr) {
