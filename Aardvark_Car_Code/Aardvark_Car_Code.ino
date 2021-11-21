@@ -103,6 +103,11 @@ int c = 15;
 // forward controls forward speed
 int forward = 200;
 
+bool clockwise = true;
+int min_angle = 20;
+int max_angle = 180 - min_angle;
+int angle = min_angle;
+
 float batteryVoltage = 0;
 bool isBuzzered = false;
 
@@ -118,142 +123,7 @@ void setup() {
 
 // Loop function is called continuously
 void loop() {
-  // Below is code for IR remote control
-  // Commented out because we are not using it at the moment
-  /*if (irrecv.decode(&results)) {
-    isStopFromIR = false;
-    currentKeyCode = results.value;
-    if (currentKeyCode != 0xFFFFFFFF) {
-      lastKeyCode = currentKeyCode;
-    }
-    switch (lastKeyCode) {
-      case IR_REMOTE_KEYCODE_UP:
-        motorRun(IR_CAR_SPEED, IR_CAR_SPEED);
-        break;
-      case IR_REMOTE_KEYCODE_DOWN:
-        motorRun(-IR_CAR_SPEED, -IR_CAR_SPEED);
-        break;
-      case IR_REMOTE_KEYCODE_LEFT:
-        motorRun(-IR_CAR_SPEED, IR_CAR_SPEED);
-        break;
-      case IR_REMOTE_KEYCODE_RIGHT:
-        motorRun(IR_CAR_SPEED, -IR_CAR_SPEED);
-        break;
-      case IR_REMOTE_KEYCODE_CENTER:
-        setBuzzer(true);
-        break;
-      case IR_REMOTE_KEYCODE_0:
-        break;
-      case IR_REMOTE_KEYCODE_1:
-        stripDisplayMode = 1;
-        break;
-      case IR_REMOTE_KEYCODE_2:
-        colorStep += 5;
-        if (colorStep > 100)
-        {
-          colorStep = 100;
-        }
-        break;
-      case IR_REMOTE_KEYCODE_3:
-        colorStep -= 5;
-        if (colorStep < 5)
-        {
-          colorStep = 5;
-        }
-        break;
-      case IR_REMOTE_KEYCODE_4:
-        stripDisplayMode = 0;
-        break;
-      case IR_REMOTE_KEYCODE_5:
-        stripDisplayDelay -= 20;
-        if (stripDisplayDelay < 20)
-        {
-          stripDisplayDelay = 20;
-        }
-        break;
-      case IR_REMOTE_KEYCODE_6:
-        stripDisplayDelay += 20;
-        if (stripDisplayDelay > 300)
-        {
-          stripDisplayDelay = 300;
-        }
-        break;
-    }
-    irrecv.resume(); // Receive the next value
-    lastIRUpdateTime = millis();
-  }
-  else {
-    if (millis() - lastIRUpdateTime > IR_UPDATE_TIMEOUT)
-    {
-      if (!isStopFromIR) {
-        isStopFromIR = true;
-        motorRun(0, 0);
-        setBuzzer(false);
-      }
-      lastIRUpdateTime = millis();
-    }
-  }
-  switch (stripDisplayMode)
-  {
-    case 0:
-      if (millis() - lastStripUpdateTime > stripDisplayDelay)
-      {
-        for (int i = 0; i < STRIP_LEDS_COUNT; i++) {
-          strip.setLedColorData(i, strip.Wheel(colorPos + i * 25));
-        }
-        strip.show();
-        colorPos += colorStep;
-        lastStripUpdateTime = millis();
-      }
-      break;
-    case 1:
-      if (millis() - lastStripUpdateTime > stripDisplayDelay)
-      {
-        strip.setLedColor(currentLedIndex, strip.Wheel(colorPos));
-        currentLedIndex++;
-        if (currentLedIndex == STRIP_LEDS_COUNT)
-        {
-          currentLedIndex = 0;
-          colorPos += colorStep; //nrfDataRead[POT1] / 20;
-        }
-        lastStripUpdateTime = millis();
-      }
-      break;
-    default:
-      break;
-  }*/
-  motorRun(forward,forward);
-  for(int i = 15; i<= 165; i+=15) {
-    servo.write(i);
-    dist = getSonar();
-    if(dist < 10) {
-      motorRun(-x-c, x);
-      delay(delay_time);
-      motorRun(forward,forward);
-    }
-    delay(d);
-   }
-
-  for(int i = 165; i>=15; i-=15) {
-    servo.write(i);
-    dist = getSonar();
-    if(dist < 10) {
-      motorRun(x,-x-c);
-      delay(delay_time);
-      motorRun(forward,forward);
-    }
-    delay(d);
-  }
- 
-  /*
-  // Below code is written by us
-  motorRun(100,100); // move forward
-  float dist = 10;
-  if (dist < 10) { // if an object is detected in front,
-    motorRun(100,-130);
-    delay(1500); // turn 90 degrees to the right
-  }
-  */
+  servo_rotate()
 }
 
 ////////// All code below is taken from the example code provided with the car kit
@@ -268,6 +138,18 @@ void pinsSetup() {
   pinMode(PIN_TRACKING_RIGHT, INPUT); // 
   pinMode(PIN_TRACKING_CENTER, INPUT); // 
   setBuzzer(false);
+}
+
+void servo_rotate() {
+  servo.write(angle)
+  angle += clockwise ? 1 : -1;
+
+  if(angle == max_angle) {
+    clockwise = false;
+  } else if (angle == min_angle) {
+    clockwise = true;
+  }
+  delay(15);
 }
 
 void motorRun(int speedl, int speedr) {
