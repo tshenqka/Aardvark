@@ -72,6 +72,8 @@
 Servo servo;             //create servo object
 byte servoOffset = 0;    //change the value to Calibrate servo
 
+char inChar; // input from the wifi board
+
 IRrecv irrecv(PIN_IRREMOTE_RECV);
 decode_results results;
 u32 currentKeyCode, lastKeyCode;
@@ -119,11 +121,25 @@ void setup() {
   servo.write(90 + servoOffset);  // change servoOffset to Calibrate servo
   strip.begin();
   irrecv.enableIRIn(); // Start the receiver
+  pinMode(0, INPUT); // clock
+  pinMode(1, INPUT); // datax
 }
 
 // Loop function is called continuously
 void loop() {
   servo_rotate()
+}
+
+void serialRead() {
+  bool last = false;
+  while (true) {
+    bool clock = digitalRead(0);
+    if (last == false && clock) {
+      digitalWrite(13, digitalRead(1));
+    }
+    last = clock;
+    delay(8);
+  }
 }
 
 ////////// All code below is taken from the example code provided with the car kit
