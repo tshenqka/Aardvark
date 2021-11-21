@@ -226,29 +226,29 @@ void loop() {
     default:
       break;
   }*/
-  motorRun(forward,forward);
-  for(int i = 15; i<= 165; i+=15) {
-    servo.write(i);
-    dist = getSonar();
-    if(dist < 10) {
-      motorRun(-x-c, x);
-      delay(delay_time);
-      motorRun(forward,forward);
-    }
-    delay(d);
-   }
-
-  for(int i = 165; i>=15; i-=15) {
-    servo.write(i);
-    dist = getSonar();
-    if(dist < 10) {
-      motorRun(x,-x-c);
-      delay(delay_time);
-      motorRun(forward,forward);
-    }
-    delay(d);
-  }
-
+//  motorRun(forward,forward);
+//  for(int i = 15; i<= 165; i+=15) {
+//    servo.write(i);
+//    dist = getSonar();
+//    if(dist < 10) {
+//      motorRun(-x-c, x);
+//      delay(delay_time);
+//      motorRun(forward,forward);
+//    }
+//    delay(d);
+//   }
+//
+//  for(int i = 165; i>=15; i-=15) {
+//    servo.write(i);
+//    dist = getSonar();
+//    if(dist < 10) {
+//      motorRun(x,-x-c);
+//      delay(delay_time);
+//      motorRun(forward,forward);
+//    }
+//    delay(d);
+//  }
+  if (digitalRead(0) == HIGH) serialRead();
 
  
   /*
@@ -262,16 +262,28 @@ void loop() {
   */
 }
 
-void serialRead() {
+int serialRead() {
+  Serial.println("Start read");
+  int output = 0;
   bool last = false;
-  while (true) {
+  for (int i = 0; i < 8; i ++) {
+    Serial.println("Delaying");
+    while (!digitalRead(0)) delay(1);
+    Serial.print("Reading ");
+    int r = digitalRead(1);
+    Serial.println(r);
+    output += (r << i);
+  }
+  /*while (true) {
     bool clock = digitalRead(0);
     if (last == false && clock) {
-      digitalWrite(13, digitalRead(1));
+      
     }
     last = clock;
     delay(8);
-  }
+  }*/
+  Serial.println(output);
+  return output;
 }
 
 ////////// All code below is taken from the example code provided with the car kit

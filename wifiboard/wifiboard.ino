@@ -2,7 +2,7 @@
 #include <WiFiNINA.h>
 
 char ssid[] = "eduroam";  // your WPA2 enterprise network SSID (name)
-char user[] = "c54chung@uwaterloo.ca";  // your WPA2 enterprise username
+char user[] = "jkarapos@uwaterloo.ca";  // your WPA2 enterprise username
 char pass[] = "";  // your WPA2 enterprise password
 int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
@@ -11,12 +11,6 @@ const char server[] = "encyz7exee95.x.pipedream.net";
 WiFiClient client;
 
 #define VERBOSE_WIFI false
-void wifiprint(char *msg) {
-  if (VERBOSE_WIFI) {
-    Serial.print(msg);
-  }
-}
-
 void wifiprint(char *msg) {
   if (VERBOSE_WIFI) {
     Serial.print(msg);
@@ -106,6 +100,7 @@ void internetCheck() {
 
 void loop() {
   Serial.println("Establishing first connection");
+  serialSend(56);
   while (true) {
     connect();
     delay(3000);
@@ -132,22 +127,23 @@ void printMacAddress(byte mac[]) {
   Serial.println();
 }
 
-void serialSend() {
-  while (true) {
+void serialSend(int output) {
+  for (int i = 0; i < 8; i ++) {
     digitalWrite(12, LOW);
-    delay(200);
-    digitalWrite(13,HIGH);
-    delay(200);
+    delay(20);
+    if (output % 2 == 0) {
+      digitalWrite(13, LOW);
+      Serial.print("0");
+    } else {
+      digitalWrite(13, HIGH);
+      Serial.print("1");
+    }
+    output >>= 1;
+    delay(20);
     digitalWrite(12, HIGH);
-    delay(200);
-    digitalWrite(12,LOW);
-    delay(200);
-    digitalWrite(13,LOW);
-    delay(200);
-    digitalWrite(12, HIGH);
-    delay(200);
-    digitalWrite(12,LOW);
-    delay(200);
-    delay(2000);
+    delay(20);
+    digitalWrite(12, LOW);
   }
+  Serial.println("");
+  digitalWrite(12, LOW);
 }
