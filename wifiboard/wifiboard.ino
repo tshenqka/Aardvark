@@ -3,7 +3,7 @@
 
 char ssid[] = "eduroam";  // your WPA2 enterprise network SSID (name)
 char user[] = "jkarapos@uwaterloo.ca";  // your WPA2 enterprise username
-char pass[] = "";  // your WPA2 enterprise password
+char pass[] = "Pearly*1997";  // your WPA2 enterprise password
 int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
 const char server[] = "encyz7exee95.x.pipedream.net";
@@ -130,7 +130,7 @@ void printMacAddress(byte mac[]) {
 void serialSend(int output) {
   for (int i = 0; i < 8; i ++) {
     digitalWrite(12, LOW);
-    delay(20);
+    delay(300);
     if (output % 2 == 0) {
       digitalWrite(13, LOW);
       Serial.print("0");
@@ -139,9 +139,9 @@ void serialSend(int output) {
       Serial.print("1");
     }
     output >>= 1;
-    delay(20);
+    delay(300);
     digitalWrite(12, HIGH);
-    delay(20);
+    delay(300);
     digitalWrite(12, LOW);
   }
   Serial.println("");

@@ -108,16 +108,21 @@ int forward = 200;
 float batteryVoltage = 0;
 bool isBuzzered = false;
 
+int serialInput;
+int lastSerialClock = false;
+int reads = 0;
+
 void setup() {
-  Serial.begin(9600);
+//  Serial.begin(9600);
   pinMode(PIN_SONIC_TRIG, OUTPUT);// set trigPin to output mode
   pinMode(PIN_SONIC_ECHO, INPUT); // set echoPin to input mode
   servo.attach(PIN_SERVO);        //initialize servo 
   servo.write(90 + servoOffset);  // change servoOffset to Calibrate servo
   strip.begin();
   irrecv.enableIRIn(); // Start the receiver
-  pinMode(0, INPUT); // clock
-  pinMode(1, INPUT); // datax
+  pinMode(12, INPUT); // clock
+  pinMode(13, INPUT); // datax
+  serialInput = 0;
 }
 
 // Loop function is called continuously
@@ -248,7 +253,17 @@ void loop() {
 //    }
 //    delay(d);
 //  }
-  if (digitalRead(0) == HIGH) serialRead();
+
+  serialRead();
+  if (serialInput == 56) {
+    motorRun(100,100);
+  } else {
+    motorRun(0,0);
+  }
+  Serial.println(serialInput);
+  delay(1);
+  
+  
 
  
   /*
@@ -263,17 +278,36 @@ void loop() {
 }
 
 int serialRead() {
-  Serial.println("Start read");
-  int output = 0;
-  bool last = false;
-  for (int i = 0; i < 8; i ++) {
-    Serial.println("Delaying");
-    while (!digitalRead(0)) delay(1);
-    Serial.print("Reading ");
-    int r = digitalRead(1);
-    Serial.println(r);
-    output += (r << i);
-  }
+    int c = digitalRead(12);
+    if (c && !lastSerialClock) {
+      int r = (bool) digitalRead(13);
+      serialInput += (r << 8);
+      serialInput >>= 1;
+      reads++;
+    }
+    lastSerialClock = c;
+//    while (!c || last) {
+//      last = c;
+//      delay(1);
+//      c = digitalRead(12);
+//    }
+//  Serial.println("Start read");
+//  int output = 0;
+//  bool last = false;
+//  for (int i = 0; i < 8; i ++) {
+//    Serial.println("Delaying");
+//    int c = digitalRead(0);
+//    while (!c || last) {
+//      last = c;
+//      delay(1);
+//      c = digitalRead(0);
+//    }
+//    last = true;
+//    Serial.print("Reading ");
+//    int r = digitalRead(1);
+//    Serial.println(r);
+//    output += (r << i);
+//  }
   /*while (true) {
     bool clock = digitalRead(0);
     if (last == false && clock) {
@@ -282,8 +316,7 @@ int serialRead() {
     last = clock;
     delay(8);
   }*/
-  Serial.println(output);
-  return output;
+//  return output;
 }
 
 ////////// All code below is taken from the example code provided with the car kit
