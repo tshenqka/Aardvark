@@ -47,6 +47,8 @@
 Servo servo;             //create servo object
 byte servoOffset = 0;    //change the value to Calibrate servo
 
+int serialInput = 0; // input from the wifi board
+
 //Definitions related to Led-strip
 #define STRIP_I2C_ADDRESS  0x20
 #define STRIP_LEDS_COUNT   10
@@ -80,7 +82,6 @@ int turn_delay = 1000;
 float turn_multiplier = 1.2;
 
 void setup() {
-  Serial.begin(9600);
   pinMode(PIN_SONIC_TRIG, OUTPUT);// set trigPin to output mode
   pinMode(PIN_SONIC_ECHO, INPUT); // set echoPin to input mode
   servo.attach(PIN_SERVO);        //initialize servo 
@@ -94,38 +95,33 @@ void loop() {
   obstacle_avoidance();
   motorRun(speed , speed);
   servo_rotate_step();
-
 }
 
-////////// All code below is taken from the example code provided with the car kit
-void pinsSetup() {
-  pinMode(PIN_DIRECTION_LEFT, OUTPUT);
-  pinMode(PIN_MOTOR_PWM_LEFT, OUTPUT);
-  pinMode(PIN_DIRECTION_RIGHT, OUTPUT);
-  pinMode(PIN_MOTOR_PWM_RIGHT, OUTPUT);
-  pinMode(PIN_SONIC_TRIG, OUTPUT);// set trigPin to output mode
-  pinMode(PIN_SONIC_ECHO, INPUT); // set echoPin to input mode
-  pinMode(PIN_TRACKING_LEFT, INPUT); // 
-  pinMode(PIN_TRACKING_RIGHT, INPUT); // 
-  pinMode(PIN_TRACKING_CENTER, INPUT); // 
-  setBuzzer(false);
+int serialRead() {
+  if (digitalRead(0) == LOW && digitalRead(1) == LOW) {
+    return 0;
+  } else if (digitalRead(0) == LOW && digitalRead(1) == HIGH) {
+    return 1;
+  } else if (digitalRead(0) == HIGH && digitalRead(1) == LOW) {
+    return 2;
+  } else {
+    return 3;
+  }
 }
 
 void servo_rotate_step(void) {
   if(is_clockwise) {
-   current_angle += 10;
+    current_angle += 10;
   } else {
-   current_angle -= 10;
+    current_angle -= 10;
   }
- 
   servo.write(current_angle);
- 
- if(current_angle == max_angle) {
-   is_clockwise = false;
- } else if (current_angle == 180 - max_angle) {
-   is_clockwise = true;
- }
- delay(servo_delay);
+  if(current_angle == max_angle) {
+    is_clockwise = false;
+  } else if (current_angle == 180 - max_angle) {
+    is_clockwise = true;
+  }
+  delay(servo_delay);
 }
 
 void obstacle_avoidance() {

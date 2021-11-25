@@ -6,7 +6,7 @@ char user[] = "c54chung@uwaterloo.ca";  // your WPA2 enterprise username
 char pass[] = "";  // your WPA2 enterprise password
 int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
-const char server[] = "encyz7exee95.x.pipedream.net";
+const char server[] = "deployments.jaysee.ca";
 
 WiFiClient client;
 
@@ -42,8 +42,8 @@ void setup() {
   if (fv < WIFI_FIRMWARE_LATEST_VERSION) 
     wifiprintln("Firmware upgrade found.");
 
-  pinMode(12, OUTPUT); // clock
-  pinMode(13, OUTPUT); // data
+  pinMode(12, OUTPUT); // data1
+  pinMode(13, OUTPUT); // data2
 
   wifiprintln("Setup complete");
 }
@@ -75,10 +75,13 @@ void connect() {
   wifiprintln(String(WiFi.RSSI()));
 }
 
+int lastRSSI = 0;
+
 void internetCheck() {
   // Check the network connection once every 5 seconds. Returns when connection to the server is lost
   while (true) {
-    delay(5000);
+    lastRSSI = WiFi.RSSI();
+    delay(2000);
     bool connected = false;
     for (int i = 0; i < 3; i++) {
       if (client.connect(server, 80)) {
@@ -97,6 +100,10 @@ void internetCheck() {
         connected = true;
         wifiprint("HTTP request sent to ");
         wifiprintln(server);
+        int currentRSSI = WiFi.RSSI();
+        if (currentRSSI > -50) serialSend(3);
+        else if (currentRSSI >= lastRSSI) serialSend(2);
+        else serialSend(1);
         break;
       }
     }
@@ -105,49 +112,57 @@ void internetCheck() {
 }
 
 void loop() {
-  wifiprintln("Establishing first connection");
   while (true) {
+    wifiprintln("Establishing first connection");
+    while (true) {
+    serialSend(0)
     connect();
+    serialSend(3);
     delay(3000);
     while (status == WL_CONNECTED) {
       delay(5000);
       internetCheck();
       wifiprintln("Lost connection to the server.");
     }
+    serialSend(0);
     wifiprintln("Lost connection to the network. Reattempting connection in 5 seconds...");
     delay(5000);
   }
+  serialSend(0);
+  delay(1000);
+  serialSend(1);
+  delay(1000);
+  serialSend(2);
+  delay(1000);
+  serialSend(3);
+  delay(1000);
 }
 
 void printMacAddress(byte mac[]) {
-//  for (int i = 5; i >= 0; i--) {
-//    if (mac[i] < 16) {
-//      wifiprint("0");
-//    }
-//    wifiprint(mac[i], HEX);
-//    if (i > 0) {
-//      wifiprint(":");
-//    }
-//  }
-//  wifiprintln();
+ for (int i = 5; i >= 0; i--) {
+   if (mac[i] < 16) {
+     wifiprint("0");
+   }
+   wifiprint(mac[i], HEX);
+   if (i > 0) {
+     wifiprint(":");
+   }
+ }
+ wifiprintln();
 }
 
-void serialSend() {
-  while (true) {
+void serialSend(int n) {
+  if (n == 0) {
     digitalWrite(12, LOW);
-    delay(200);
-    digitalWrite(13,HIGH);
-    delay(200);
+    digitalWrite(13, LOW);
+  } else if (n == 1) {
+    digitalWrite(12, LOW);
+    digitalWrite(13, HIGH);
+  } else if (n == 2) {
     digitalWrite(12, HIGH);
-    delay(200);
-    digitalWrite(12,LOW);
-    delay(200);
-    digitalWrite(13,LOW);
-    delay(200);
+    digitalWrite(13, LOW);
+  } else {
     digitalWrite(12, HIGH);
-    delay(200);
-    digitalWrite(12,LOW);
-    delay(200);
-    delay(2000);
+    digitalWrite(13, HIGH);
   }
 }
