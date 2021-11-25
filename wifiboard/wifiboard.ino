@@ -42,8 +42,8 @@ void setup() {
   if (fv < WIFI_FIRMWARE_LATEST_VERSION) 
     Serial.println("Firmware upgrade found.");
 
-  pinMode(12, OUTPUT); // clock
-  pinMode(13, OUTPUT); // data
+  pinMode(12, OUTPUT); // data1
+  pinMode(13, OUTPUT); // data2
 
   Serial.println("Setup complete");
 }
@@ -132,22 +132,18 @@ void printMacAddress(byte mac[]) {
   Serial.println();
 }
 
-void serialSend() {
-  while (true) {
+void serialSend(int n) {
+  if (n == 0) {
     digitalWrite(12, LOW);
-    delay(200);
-    digitalWrite(13,HIGH);
-    delay(200);
+    digitalWrite(13, LOW);
+  } else if (n == 1) {
+    digitalWrite(12, LOW);
+    digitalWrite(13, HIGH);
+  } else if (n == 2) {
     digitalWrite(12, HIGH);
-    delay(200);
-    digitalWrite(12,LOW);
-    delay(200);
-    digitalWrite(13,LOW);
-    delay(200);
+    digitalWrite(13, LOW);
+  } else {
     digitalWrite(12, HIGH);
-    delay(200);
-    digitalWrite(12,LOW);
-    delay(200);
-    delay(2000);
+    digitalWrite(13, HIGH);
   }
 }

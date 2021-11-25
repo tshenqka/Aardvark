@@ -72,7 +72,7 @@
 Servo servo;             //create servo object
 byte servoOffset = 0;    //change the value to Calibrate servo
 
-char inChar; // input from the wifi board
+int serialInput; // input from the wifi board
 
 IRrecv irrecv(PIN_IRREMOTE_RECV);
 decode_results results;
@@ -131,14 +131,14 @@ void loop() {
 }
 
 void serialRead() {
-  bool last = false;
-  while (true) {
-    bool clock = digitalRead(0);
-    if (last == false && clock) {
-      digitalWrite(13, digitalRead(1));
-    }
-    last = clock;
-    delay(8);
+  if (digitalRead(0) == LOW || digitalRead(1) == LOW) {
+    serialInput == 0;
+  } else if (digitalRead(0) == LOW || digitalRead(1) == HIGH) {
+    serialInput == 1;
+  } else if (digitalRead(0) == HIGH || digitalRead(1) == LOW) {
+    serialInput == 2;
+  } else {
+    serialInput == 3;
   }
 }
 
