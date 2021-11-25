@@ -2,8 +2,8 @@
 #include <WiFiNINA.h>
 
 char ssid[] = "eduroam";  // your WPA2 enterprise network SSID (name)
-char user[] = "c54chung@uwaterloo.ca";  // your WPA2 enterprise username
-char pass[] = "";  // your WPA2 enterprise password
+char user[] = "jkarapos@uwaterloo.ca";  // your WPA2 enterprise username
+char pass[] = "Pearly*1997";  // your WPA2 enterprise password
 int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
 const char server[] = "deployments.jaysee.ca";
@@ -25,6 +25,8 @@ void wifiprintln(String msg) {
 }
 
 void serialSend(int n) {
+  wifiprint("Signalling ");
+  wifiprintln(String(n));
   if (n == 0) {
     digitalWrite(12, LOW);
     digitalWrite(13, LOW);
@@ -80,7 +82,7 @@ void connect() {
     }
   }
 
-  wifiprintln("Connection successful.");
+  wifiprintln("Connection to eduroam successful");
   wifiprint("Local IP Address: ");
   wifiprintln(String(WiFi.localIP()));
   wifiprint("Signal strength (RSSI): ");
@@ -95,8 +97,8 @@ void internetCheck() {
     lastRSSI = WiFi.RSSI();
     delay(2000);
     bool connected = false;
-    for (int i = 0; i < 3; i++) {
-      if (client.connect(server, 80)) {
+    for (int i = 0; i < 1; i++) {
+      if (client.connect(server, 8080)) {
         wifiprint("Connection established to ");
         wifiprintln(server);
         // Make a HTTP request:
@@ -134,9 +136,9 @@ void loop() {
       while (status == WL_CONNECTED) {
         delay(5000);
         internetCheck();
+        serialSend(0);
         wifiprintln("Lost connection to the server.");
       }
-      serialSend(0);
       wifiprintln("Lost connection to the network. Reattempting connection in 5 seconds...");
       delay(5000);
     }

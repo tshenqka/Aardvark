@@ -92,9 +92,15 @@ void setup() {
 
 // Loop function is called continuously
 void loop() {
-  obstacle_avoidance();
+  /*obstacle_avoidance();
   motorRun(speed , speed);
-  servo_rotate_step();
+  servo_rotate_step();*/
+  if (serialRead() == 0) {
+    motorRun(100,100);
+  } else {
+    motorRun(0,0);
+  }
+  
 }
 
 int serialRead() {
