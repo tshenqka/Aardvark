@@ -66,7 +66,7 @@ bool isBuzzered = false;
 int speedOffset;
 
 // Servo parameters
-int max_angle = 165;
+int max_angle = 170;
 bool is_clockwise = true;
 int current_angle = 0;
 int servo_delay = 15;
@@ -77,6 +77,7 @@ int speed = 100;
 // Obstacle avoidance parameters
 int min_distance = 10;
 int turn_delay = 1000;
+float turn_multiplier = 1.2;
 
 void setup() {
   Serial.begin(9600);
@@ -90,7 +91,8 @@ void setup() {
 
 // Loop function is called continuously
 void loop() {
-  //motorRun(speed + speedOffset, speed + speedOffset);
+  obstacle_avoidance();
+  motorRun(speed , speed);
   servo_rotate_step();
 
 }
@@ -111,9 +113,9 @@ void pinsSetup() {
 
 void servo_rotate_step(void) {
   if(is_clockwise) {
-   current_angle++;
+   current_angle += 10;
   } else {
-   current_angle--;
+   current_angle -= 10;
   }
  
   servo.write(current_angle);
@@ -128,11 +130,13 @@ void servo_rotate_step(void) {
 
 void obstacle_avoidance() {
   if(getSonar() < 10) {
+    motorRun(-speed, -speed);
+    delay(1000);
     if(is_clockwise) {
-      motorRun(-(speed + speedOffset), speed + speedOffset);
+      motorRun(-1*turn_multiplier*speed, turn_multiplier* speed);
     }
     if(!is_clockwise) {
-      motorRun((speed + speedOffset), -(speed + speedOffset));
+      motorRun(turn_multiplier*speed,-1*turn_multiplier*speed);
     }
     delay(turn_delay);
   }
