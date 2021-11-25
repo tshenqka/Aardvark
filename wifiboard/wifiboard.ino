@@ -10,14 +10,14 @@ const char server[] = "encyz7exee95.x.pipedream.net";
 
 WiFiClient client;
 
-#define VERBOSE_WIFI false
-void wifiprint(char *msg) {
+#define VERBOSE_WIFI true
+void wifiprint(String msg) {
   if (VERBOSE_WIFI) {
     Serial.print(msg);
   }
 }
 
-void wifiprint(char *msg) {
+void wifiprintln(String msg) {
   if (VERBOSE_WIFI) {
     Serial.print(msg);
     Serial.println();
@@ -29,50 +29,50 @@ void setup() {
   Serial.begin(9600);
   while (!Serial); 
 
-  Serial.println("Begin startup");
+  wifiprintln("Begin startup");
 
   // Abort if there is no wifi module
   if (WiFi.status() == WL_NO_MODULE) {
-    Serial.println("Communication with WiFi module failed! Aborting...");
+    wifiprintln("Communication with WiFi module failed! Aborting...");
     while (true);
   }
 
   // Check firmware
   String fv = WiFi.firmwareVersion();
   if (fv < WIFI_FIRMWARE_LATEST_VERSION) 
-    Serial.println("Firmware upgrade found.");
+    wifiprintln("Firmware upgrade found.");
 
   pinMode(12, OUTPUT); // clock
   pinMode(13, OUTPUT); // data
 
-  Serial.println("Setup complete");
+  wifiprintln("Setup complete");
 }
 
 void connect() {
   // Attempt to connect to eduroam
   while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to network with SSID: ");
-    Serial.println(ssid);
+    wifiprint("Attempting to connect to network with SSID: ");
+    wifiprintln(ssid);
     // status = WiFi.beginEnterprise(ssid, user, pass, identity, caCert)
     status = WiFi.beginEnterprise(ssid, user, pass);
 
     // Check the connection every 5 seconds
     delay(5000);
     if (status != WL_CONNECTED) {
-      Serial.println("Connection failed. Retrying in 3 seconds.");
+      wifiprintln("Connection failed. Retrying in 3 seconds.");
       delay(3000);
     }
   }
 
-  Serial.println("Connection successful.");
+  wifiprintln("Connection successful.");
   byte mac[6];
   WiFi.macAddress(mac);
-  Serial.print("MAC address: ");
+  wifiprint("MAC address: ");
   printMacAddress(mac);
-  Serial.print("Local IP Address: ");
-  Serial.println(WiFi.localIP());
-  Serial.print("Signal strength (RSSI): ");
-  Serial.println(WiFi.RSSI());
+  wifiprint("Local IP Address: ");
+  wifiprintln(String(WiFi.localIP()));
+  wifiprint("Signal strength (RSSI): ");
+  wifiprintln(String(WiFi.RSSI()));
 }
 
 void internetCheck() {
@@ -82,8 +82,8 @@ void internetCheck() {
     bool connected = false;
     for (int i = 0; i < 3; i++) {
       if (client.connect(server, 80)) {
-        Serial.print("Connection established to ");
-        Serial.println(server);
+        wifiprint("Connection established to ");
+        wifiprintln(server);
         // Make a HTTP request:
         client.println("GET / HTTP/1.0");
         client.print("Host: ");
@@ -95,8 +95,8 @@ void internetCheck() {
         client.println("Connection: close");
         client.println();
         connected = true;
-        Serial.print("HTTP request sent to ");
-        Serial.println(server);
+        wifiprint("HTTP request sent to ");
+        wifiprintln(server);
         break;
       }
     }
@@ -105,31 +105,31 @@ void internetCheck() {
 }
 
 void loop() {
-  Serial.println("Establishing first connection");
+  wifiprintln("Establishing first connection");
   while (true) {
     connect();
     delay(3000);
     while (status == WL_CONNECTED) {
       delay(5000);
       internetCheck();
-      Serial.println("Lost connection to the server.");
+      wifiprintln("Lost connection to the server.");
     }
-    Serial.println("Lost connection to the network. Reattempting connection in 5 seconds...");
+    wifiprintln("Lost connection to the network. Reattempting connection in 5 seconds...");
     delay(5000);
   }
 }
 
 void printMacAddress(byte mac[]) {
-  for (int i = 5; i >= 0; i--) {
-    if (mac[i] < 16) {
-      Serial.print("0");
-    }
-    Serial.print(mac[i], HEX);
-    if (i > 0) {
-      Serial.print(":");
-    }
-  }
-  Serial.println();
+//  for (int i = 5; i >= 0; i--) {
+//    if (mac[i] < 16) {
+//      wifiprint("0");
+//    }
+//    wifiprint(mac[i], HEX);
+//    if (i > 0) {
+//      wifiprint(":");
+//    }
+//  }
+//  wifiprintln();
 }
 
 void serialSend() {
