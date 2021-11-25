@@ -115,7 +115,7 @@ void internetCheck() {
         wifiprint("HTTP request sent to ");
         wifiprintln(server);
         int currentRSSI = WiFi.RSSI();
-        if (currentRSSI > -50) serialSend(3);
+        if (currentRSSI > -48) serialSend(3);
         else if (currentRSSI >= lastRSSI) serialSend(2);
         else serialSend(1);
         break;
@@ -129,7 +129,6 @@ void loop() {
   while (true) {
     wifiprintln("Establishing first connection");
     while (true) {
-      serialSend(0);
       connect();
       serialSend(3);
       delay(3000);
@@ -142,13 +141,5 @@ void loop() {
       wifiprintln("Lost connection to the network. Reattempting connection in 5 seconds...");
       delay(5000);
     }
-    serialSend(0);
-    delay(1000);
-    serialSend(1);
-    delay(1000);
-    serialSend(2);
-    delay(1000);
-    serialSend(3);
-    delay(1000);
   }
 }
