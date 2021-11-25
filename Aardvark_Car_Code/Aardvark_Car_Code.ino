@@ -92,6 +92,7 @@ void setup() {
 
 // Loop function is called continuously
 void loop() {
+  navigation();
   obstacle_avoidance();
   motorRun(speed , speed);
   servo_rotate_step();
@@ -108,6 +109,20 @@ int serialRead() {
     return 3;
   }
 }
+
+
+void navigation(){
+  if(serialRead() == 1) {
+    int rand_delay = random(1300,1700);
+    motorRun(-speed; speed);
+    delay(rand_delay);
+  }
+  while (serialRead() == 3) {
+    motorRun(0,0);
+    delay(1000);
+  }
+}
+
 
 void servo_rotate_step(void) {
   if(is_clockwise) {
