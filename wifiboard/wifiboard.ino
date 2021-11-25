@@ -24,6 +24,22 @@ void wifiprintln(String msg) {
   }
 }
 
+void serialSend(int n) {
+  if (n == 0) {
+    digitalWrite(12, LOW);
+    digitalWrite(13, LOW);
+  } else if (n == 1) {
+    digitalWrite(12, LOW);
+    digitalWrite(13, HIGH);
+  } else if (n == 2) {
+    digitalWrite(12, HIGH);
+    digitalWrite(13, LOW);
+  } else {
+    digitalWrite(12, HIGH);
+    digitalWrite(13, HIGH);
+  }
+}
+
 void setup() {
   // Initialize serial and wait for port to open
   Serial.begin(9600);
@@ -65,10 +81,6 @@ void connect() {
   }
 
   wifiprintln("Connection successful.");
-  byte mac[6];
-  WiFi.macAddress(mac);
-  wifiprint("MAC address: ");
-  printMacAddress(mac);
   wifiprint("Local IP Address: ");
   wifiprintln(String(WiFi.localIP()));
   wifiprint("Signal strength (RSSI): ");
@@ -115,54 +127,26 @@ void loop() {
   while (true) {
     wifiprintln("Establishing first connection");
     while (true) {
-    serialSend(0)
-    connect();
-    serialSend(3);
-    delay(3000);
-    while (status == WL_CONNECTED) {
+      serialSend(0);
+      connect();
+      serialSend(3);
+      delay(3000);
+      while (status == WL_CONNECTED) {
+        delay(5000);
+        internetCheck();
+        wifiprintln("Lost connection to the server.");
+      }
+      serialSend(0);
+      wifiprintln("Lost connection to the network. Reattempting connection in 5 seconds...");
       delay(5000);
-      internetCheck();
-      wifiprintln("Lost connection to the server.");
     }
     serialSend(0);
-    wifiprintln("Lost connection to the network. Reattempting connection in 5 seconds...");
-    delay(5000);
-  }
-  serialSend(0);
-  delay(1000);
-  serialSend(1);
-  delay(1000);
-  serialSend(2);
-  delay(1000);
-  serialSend(3);
-  delay(1000);
-}
-
-void printMacAddress(byte mac[]) {
- for (int i = 5; i >= 0; i--) {
-   if (mac[i] < 16) {
-     wifiprint("0");
-   }
-   wifiprint(mac[i], HEX);
-   if (i > 0) {
-     wifiprint(":");
-   }
- }
- wifiprintln();
-}
-
-void serialSend(int n) {
-  if (n == 0) {
-    digitalWrite(12, LOW);
-    digitalWrite(13, LOW);
-  } else if (n == 1) {
-    digitalWrite(12, LOW);
-    digitalWrite(13, HIGH);
-  } else if (n == 2) {
-    digitalWrite(12, HIGH);
-    digitalWrite(13, LOW);
-  } else {
-    digitalWrite(12, HIGH);
-    digitalWrite(13, HIGH);
+    delay(1000);
+    serialSend(1);
+    delay(1000);
+    serialSend(2);
+    delay(1000);
+    serialSend(3);
+    delay(1000);
   }
 }
