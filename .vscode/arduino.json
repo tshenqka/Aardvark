@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "programmer": "arduino:avrisp",
+    "sketch": "Aardvark_Car_Code/Aardvark_Car_Code.ino"
+}

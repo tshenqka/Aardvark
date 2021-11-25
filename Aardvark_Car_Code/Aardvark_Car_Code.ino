@@ -94,6 +94,12 @@ Freenove_WS2812B_Controller strip(STRIP_I2C_ADDRESS, STRIP_LEDS_COUNT, TYPE_GRB)
 float batteryVoltage = 0;
 bool isBuzzered = false;
 
+// Servo Parameters
+int max_angle = 165;
+bool is_clockwise = true;
+int current_angle = 0;
+int servo_delay = 15;
+
 void setup() {
   Serial.begin(9600);
   pinMode(PIN_SONIC_TRIG, OUTPUT);// set trigPin to output mode
@@ -106,142 +112,7 @@ void setup() {
 
 // Loop function is called continuously
 void loop() {
-  // Below is code for IR remote control
-  // Commented out because we are not using it at the moment
-  /*if (irrecv.decode(&results)) {
-    isStopFromIR = false;
-    currentKeyCode = results.value;
-    if (currentKeyCode != 0xFFFFFFFF) {
-      lastKeyCode = currentKeyCode;
-    }
-    switch (lastKeyCode) {
-      case IR_REMOTE_KEYCODE_UP:
-        motorRun(IR_CAR_SPEED, IR_CAR_SPEED);
-        break;
-      case IR_REMOTE_KEYCODE_DOWN:
-        motorRun(-IR_CAR_SPEED, -IR_CAR_SPEED);
-        break;
-      case IR_REMOTE_KEYCODE_LEFT:
-        motorRun(-IR_CAR_SPEED, IR_CAR_SPEED);
-        break;
-      case IR_REMOTE_KEYCODE_RIGHT:
-        motorRun(IR_CAR_SPEED, -IR_CAR_SPEED);
-        break;
-      case IR_REMOTE_KEYCODE_CENTER:
-        setBuzzer(true);
-        break;
-      case IR_REMOTE_KEYCODE_0:
-        break;
-      case IR_REMOTE_KEYCODE_1:
-        stripDisplayMode = 1;
-        break;
-      case IR_REMOTE_KEYCODE_2:
-        colorStep += 5;
-        if (colorStep > 100)
-        {
-          colorStep = 100;
-        }
-        break;
-      case IR_REMOTE_KEYCODE_3:
-        colorStep -= 5;
-        if (colorStep < 5)
-        {
-          colorStep = 5;
-        }
-        break;
-      case IR_REMOTE_KEYCODE_4:
-        stripDisplayMode = 0;
-        break;
-      case IR_REMOTE_KEYCODE_5:
-        stripDisplayDelay -= 20;
-        if (stripDisplayDelay < 20)
-        {
-          stripDisplayDelay = 20;
-        }
-        break;
-      case IR_REMOTE_KEYCODE_6:
-        stripDisplayDelay += 20;
-        if (stripDisplayDelay > 300)
-        {
-          stripDisplayDelay = 300;
-        }
-        break;
-    }
-    irrecv.resume(); // Receive the next value
-    lastIRUpdateTime = millis();
-  }
-  else {
-    if (millis() - lastIRUpdateTime > IR_UPDATE_TIMEOUT)
-    {
-      if (!isStopFromIR) {
-        isStopFromIR = true;
-        motorRun(0, 0);
-        setBuzzer(false);
-      }
-      lastIRUpdateTime = millis();
-    }
-  }
-  switch (stripDisplayMode)
-  {
-    case 0:
-      if (millis() - lastStripUpdateTime > stripDisplayDelay)
-      {
-        for (int i = 0; i < STRIP_LEDS_COUNT; i++) {
-          strip.setLedColorData(i, strip.Wheel(colorPos + i * 25));
-        }
-        strip.show();
-        colorPos += colorStep;
-        lastStripUpdateTime = millis();
-      }
-      break;
-    case 1:
-      if (millis() - lastStripUpdateTime > stripDisplayDelay)
-      {
-        strip.setLedColor(currentLedIndex, strip.Wheel(colorPos));
-        currentLedIndex++;
-        if (currentLedIndex == STRIP_LEDS_COUNT)
-        {
-          currentLedIndex = 0;
-          colorPos += colorStep; //nrfDataRead[POT1] / 20;
-        }
-        lastStripUpdateTime = millis();
-      }
-      break;
-    default:
-      break;
-  }*/
- 
-  servo.write(45);
-  delay(1000);
-  distance[0] = getSonar();   //get ultrsonice value and save it into distance[0]
-
-  servo.write(90);
-  delay(1000);
-  distance[1] = getSonar();
-
-  servo.write(135);
-  delay(1000);
-  distance[2] = getSonar();
-
-  servo.write(90);
-  delay(1000);
-  distance[3] = getSonar();
-  
-  Serial.print("Distance L / M / R / M2:   ");  //Left/Middle/Right/Middle2
-  for (int i = 0; i < 4; i++) {
-    Serial.print(distance[i]);     //print ultrasonic in 45°, 90°, 135°, 90°
-    Serial.print("/");
-  }
-  Serial.print('\n');  //next content will be printed in new line
-  /*
-  // Below code is written by us
-  motorRun(100,100); // move forward
-  float dist = getSonar();
-  if (dist < 10) { // if an object is detected in front,
-    motorRun(100,-130);
-    delay(1500); // turn 90 degrees to the right
-  */
-  }
+  servo_rotate_step(max_angle, &is_clockwise, &current_angle, servo_delay);
 }
 
 ////////// All code below is taken from the example code provided with the car kit
@@ -256,6 +127,23 @@ void pinsSetup() {
   pinMode(PIN_TRACKING_RIGHT, INPUT); // 
   pinMode(PIN_TRACKING_CENTER, INPUT); // 
   setBuzzer(false);
+}
+
+void servo_rotate_step(int max_angle, bool *is_clockwise, int *current_angle, int servo_delay) {
+ if(is_clockwise) {
+   (*current_angle)++;
+ } else {
+   (*current_angle)--;
+ }
+ 
+ servo.write(*current_angle);
+ 
+ if(*current_angle == max_angle) {
+   *is_clockwise = false;
+ } else if (*current_angle == 180 - max_angle) {
+   *is_clockwise = true;
+ }
+ delay(servo_delay);
 }
 
 void motorRun(int speedl, int speedr) {
