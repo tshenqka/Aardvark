@@ -8,9 +8,6 @@
 #include "Freenove_WS2812B_RGBLED_Controller.h"
 ////////////////////////////////////////////
 ////Definitions related to IR-remote    --- included with pre-made code
-#define IR_UPDATE_TIMEOUT     110
-#define IR_CAR_SPEED          250
-#include <IRremote.h>
 
 #define PIN_SERVO     2
 #define PIN_DIRECTION_LEFT  4
@@ -35,28 +32,6 @@
 
 #define BAT_VOL_STANDARD  7.0
 
-#define IR_REMOTE_KEYCODE_POWER    0xFFA25D
-#define IR_REMOTE_KEYCODE_MENU    0xFF629D
-#define IR_REMOTE_KEYCODE_MUTE    0xFFE21D
-#define IR_REMOTE_KEYCODE_MODE    0xFF22DD
-#define IR_REMOTE_KEYCODE_UP      0xFF02FD
-#define IR_REMOTE_KEYCODE_BACK    0xFFC23D
-#define IR_REMOTE_KEYCODE_LEFT    0xFFE01F
-#define IR_REMOTE_KEYCODE_CENTER  0xFFA857
-#define IR_REMOTE_KEYCODE_RIGHT   0xFF906F
-#define IR_REMOTE_KEYCODE_0       0xFF6897
-#define IR_REMOTE_KEYCODE_DOWN    0xFF9867
-#define IR_REMOTE_KEYCODE_OK      0xFFB04F
-#define IR_REMOTE_KEYCODE_1     0xFF30CF
-#define IR_REMOTE_KEYCODE_2     0xFF18E7
-#define IR_REMOTE_KEYCODE_3     0xFF7A85
-#define IR_REMOTE_KEYCODE_4     0xFF10EF
-#define IR_REMOTE_KEYCODE_5     0xFF38C7
-#define IR_REMOTE_KEYCODE_6     0xFF5AA5
-#define IR_REMOTE_KEYCODE_7     0xFF42BD
-#define IR_REMOTE_KEYCODE_8     0xFF4AB5
-#define IR_REMOTE_KEYCODE_9     0xFF52AD
-
 // Definitions related to ultrasonic sensor  --- copied from 02.2_Ultrasonic_Ranging example
 #include "Servo.h"             //include servo library
  
@@ -71,13 +46,6 @@
 
 Servo servo;             //create servo object
 byte servoOffset = 0;    //change the value to Calibrate servo
-u8 distance[4];          //define an arry with type u8(same to unsigned char)
-
-IRrecv irrecv(PIN_IRREMOTE_RECV);
-decode_results results;
-u32 currentKeyCode, lastKeyCode;
-bool isStopFromIR = false;
-u32 lastIRUpdateTime = 0;
 
 //Definitions related to Led-strip
 #define STRIP_I2C_ADDRESS  0x20
@@ -94,11 +62,21 @@ Freenove_WS2812B_Controller strip(STRIP_I2C_ADDRESS, STRIP_LEDS_COUNT, TYPE_GRB)
 float batteryVoltage = 0;
 bool isBuzzered = false;
 
-// Servo Parameters
+//batteryVoltageCompensationToSpeed
+int speedOffset;
+
+// Servo parameters
 int max_angle = 165;
 bool is_clockwise = true;
 int current_angle = 0;
 int servo_delay = 15;
+
+// Motor parameters
+int speed = 100;
+
+// Obstacle avoidance parameters
+int min_distance = 10;
+int turn_delay = 1000;
 
 void setup() {
   Serial.begin(9600);
@@ -106,13 +84,15 @@ void setup() {
   pinMode(PIN_SONIC_ECHO, INPUT); // set echoPin to input mode
   servo.attach(PIN_SERVO);        //initialize servo 
   servo.write(90 + servoOffset);  // change servoOffset to Calibrate servo
+  calculateVoltageCompensation();
   strip.begin();
-  irrecv.enableIRIn(); // Start the receiver
 }
 
 // Loop function is called continuously
 void loop() {
-  servo_rotate_step(max_angle, &is_clockwise, &current_angle, servo_delay);
+  //motorRun(speed + speedOffset, speed + speedOffset);
+  servo_rotate_step();
+
 }
 
 ////////// All code below is taken from the example code provided with the car kit
@@ -129,21 +109,33 @@ void pinsSetup() {
   setBuzzer(false);
 }
 
-void servo_rotate_step(int max_angle, bool *is_clockwise, int *current_angle, int servo_delay) {
- if(is_clockwise) {
-   (*current_angle)++;
- } else {
-   (*current_angle)--;
- }
+void servo_rotate_step(void) {
+  if(is_clockwise) {
+   current_angle++;
+  } else {
+   current_angle--;
+  }
  
- servo.write(*current_angle);
+  servo.write(current_angle);
  
- if(*current_angle == max_angle) {
-   *is_clockwise = false;
- } else if (*current_angle == 180 - max_angle) {
-   *is_clockwise = true;
+ if(current_angle == max_angle) {
+   is_clockwise = false;
+ } else if (current_angle == 180 - max_angle) {
+   is_clockwise = true;
  }
  delay(servo_delay);
+}
+
+void obstacle_avoidance() {
+  if(getSonar() < 10) {
+    if(is_clockwise) {
+      motorRun(-(speed + speedOffset), speed + speedOffset);
+    }
+    if(!is_clockwise) {
+      motorRun((speed + speedOffset), -(speed + speedOffset));
+    }
+    delay(turn_delay);
+  }
 }
 
 void motorRun(int speedl, int speedr) {
@@ -173,6 +165,11 @@ void motorRun(int speedl, int speedr) {
   digitalWrite(PIN_DIRECTION_RIGHT, dirR);
   analogWrite(PIN_MOTOR_PWM_LEFT, speedl);
   analogWrite(PIN_MOTOR_PWM_RIGHT, speedr);
+}
+
+void calculateVoltageCompensation() {
+  float voltageOffset = 8.4 - getBatteryVoltage();
+  speedOffset = voltageOffset * 20;
 }
 
 bool getBatteryVoltage() {
