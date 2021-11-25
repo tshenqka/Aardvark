@@ -72,7 +72,7 @@
 Servo servo;             //create servo object
 byte servoOffset = 0;    //change the value to Calibrate servo
 
-int serialInput; // input from the wifi board
+int serialInput = 0; // input from the wifi board
 
 IRrecv irrecv(PIN_IRREMOTE_RECV);
 decode_results results;
@@ -114,7 +114,6 @@ int current_angle = 0;
 int servo_delay = 15;
 
 void setup() {
-  Serial.begin(9600);
   pinMode(PIN_SONIC_TRIG, OUTPUT);// set trigPin to output mode
   pinMode(PIN_SONIC_ECHO, INPUT); // set echoPin to input mode
   servo.attach(PIN_SERVO);        //initialize servo 
@@ -125,20 +124,16 @@ void setup() {
   pinMode(1, INPUT); // datax
 }
 
-// Loop function is called continuously
-void loop() {
-  servo_rotate_step(max_angle, &is_clockwise, &current_angle, servo_delay);
-}
 
-void serialRead() {
-  if (digitalRead(0) == LOW || digitalRead(1) == LOW) {
-    serialInput == 0;
-  } else if (digitalRead(0) == LOW || digitalRead(1) == HIGH) {
-    serialInput == 1;
-  } else if (digitalRead(0) == HIGH || digitalRead(1) == LOW) {
-    serialInput == 2;
+int serialRead() {
+  if (digitalRead(0) == LOW && digitalRead(1) == LOW) {
+    return 0;
+  } else if (digitalRead(0) == LOW && digitalRead(1) == HIGH) {
+    return 1;
+  } else if (digitalRead(0) == HIGH && digitalRead(1) == LOW) {
+    return 2;
   } else {
-    serialInput == 3;
+    return 3;
   }
 }
 
@@ -156,7 +151,7 @@ void pinsSetup() {
   setBuzzer(false);
 }
 
-void servo_rotate_step(int max_angle, bool *is_clockwise, int *current_angle, int servo_delay) {
+/*void servo_rotate_step(int max_angle, bool *is_clockwise, int *current_angle, int servo_delay) {
   (*current_angle)++;
   servo.write(current_angle);
 
@@ -165,7 +160,7 @@ void servo_rotate_step(int max_angle, bool *is_clockwise, int *current_angle, in
   } else if (angle == 180 - max_angle) {
     is_clockwise = true;
   delay(servo_delay);
-}
+}*/
 
 void motorRun(int speedl, int speedr) {
   int dirL = 0, dirR = 0;
@@ -246,4 +241,21 @@ float getSonar() {
   else
     distance = MAX_DISTANCE;
   return distance; // return the distance value
+}
+// Loop function is called continuously
+
+void loop() {
+  //servo_rotate_step(max_angle, &is_clockwise, &current_angle, servo_delay);
+  serialInput = serialRead();
+  if (serialInput == 0) {
+    motorRun(100,100);
+  } else if (serialInput == 1) {
+    motorRun(50,50);
+  } else if (serialInput == 2) {
+    motorRun(50,-50);
+  } else if (serialInput == 3) {
+    motorRun(-50,50);
+  } else {
+    motorRun(0,0);
+  }
 }

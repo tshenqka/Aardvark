@@ -6,16 +6,11 @@ char user[] = "c54chung@uwaterloo.ca";  // your WPA2 enterprise username
 char pass[] = "";  // your WPA2 enterprise password
 int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
-const char server[] = "encyz7exee95.x.pipedream.net";
+const char server[] = "deployments.jaysee.ca";
 
 WiFiClient client;
 
 #define VERBOSE_WIFI false
-void wifiprint(char *msg) {
-  if (VERBOSE_WIFI) {
-    Serial.print(msg);
-  }
-}
 
 void wifiprint(char *msg) {
   if (VERBOSE_WIFI) {
@@ -75,13 +70,16 @@ void connect() {
   Serial.println(WiFi.RSSI());
 }
 
+int lastRSSI = 0;
+
 void internetCheck() {
   // Check the network connection once every 5 seconds. Returns when connection to the server is lost
   while (true) {
-    delay(5000);
+    lastRSSI = WiFi.RSSI();
+    delay(2000);
     bool connected = false;
     for (int i = 0; i < 3; i++) {
-      if (client.connect(server, 80)) {
+      if (client.connect(server, 8080)) {
         Serial.print("Connection established to ");
         Serial.println(server);
         // Make a HTTP request:
@@ -97,6 +95,10 @@ void internetCheck() {
         connected = true;
         Serial.print("HTTP request sent to ");
         Serial.println(server);
+        int currentRSSI = WiFi.RSSI();
+        if (currentRSSI > -50) serialSend(3);
+        else if (currentRSSI >= lastRSSI) serialSend(2);
+        else serialSend(1);
         break;
       }
     }
@@ -106,17 +108,28 @@ void internetCheck() {
 
 void loop() {
   Serial.println("Establishing first connection");
-  while (true) {
+  /*while (true) {
+    serialSend(0)
     connect();
+    serialSend(3);
     delay(3000);
     while (status == WL_CONNECTED) {
       delay(5000);
       internetCheck();
       Serial.println("Lost connection to the server.");
     }
+    serialSend(0);
     Serial.println("Lost connection to the network. Reattempting connection in 5 seconds...");
     delay(5000);
-  }
+  }*/
+  serialSend(0);
+  delay(1000);
+  serialSend(1);
+  delay(1000);
+  serialSend(2);
+  delay(1000);
+  serialSend(3);
+  delay(1000);
 }
 
 void printMacAddress(byte mac[]) {
