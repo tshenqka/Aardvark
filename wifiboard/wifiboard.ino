@@ -3,7 +3,7 @@
 
 char ssid[] = "eduroam";  // your WPA2 enterprise network SSID (name)
 char user[] = "jkarapos@uwaterloo.ca";  // your WPA2 enterprise username
-char pass[] = "Pearly*1997";  // your WPA2 enterprise password
+char pass[] = "";  // your WPA2 enterprise password
 int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
 const char server[] = "deployments.jaysee.ca";
