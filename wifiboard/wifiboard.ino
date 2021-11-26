@@ -115,7 +115,7 @@ void internetCheck() {
         wifiprint("HTTP request sent to ");
         wifiprintln(server);
         int currentRSSI = WiFi.RSSI();
-        if (currentRSSI > -48) serialSend(3);
+        if (currentRSSI > -47) serialSend(3);
         else if (currentRSSI >= lastRSSI) serialSend(2);
         else serialSend(1);
         break;
