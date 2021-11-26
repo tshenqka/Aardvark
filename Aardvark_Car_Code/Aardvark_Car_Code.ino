@@ -115,6 +115,7 @@ void navigation(){
     motorRun(-turn_multiplier * speed, turn_multiplier * speed);
     delay(500);
     motorRun(speed, speed);
+    delay(1000);
   }
   while (serialRead() == 3) {
     motorRun(0,0);
