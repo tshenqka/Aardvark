@@ -113,7 +113,7 @@ int serialRead() {
 void navigation(){
   if(serialRead() == 1) {
     int rand_delay = random(1300,1700);
-    motorRun(-speed, speed);
+    motorRun(-turn_multiplier * speed, turn_multiplier * speed);
     delay(rand_delay);
   }
   while (serialRead() == 3) {
